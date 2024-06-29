@@ -1,5 +1,5 @@
 "use client";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import EndItem from "../components/EndItem";
 import Item from "../components/Item";
 import List from "../components/List";
@@ -128,9 +128,10 @@ const Page = () => {
   ) => {
     setDragOverTask(taskName);
   };
+  const containerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div>
+    <div ref={containerRef}>
       <h1>Drag and Drop without Library</h1>
       <div className="container mt-20">
         <div className="grid grid-cols-3 gap-5">

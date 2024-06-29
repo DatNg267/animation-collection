@@ -20,6 +20,7 @@ const Item = () => {
   const mouseleave = (e: React.MouseEvent<HTMLDivElement>) => {
     setPosition({ x: 0, y: 0 });
   };
+
   const { x, y } = position;
 
   return (
@@ -30,9 +31,6 @@ const Item = () => {
       animate={{ x, y }}
       transition={{
         type: "spring",
-        stiffness: 150,
-        damping: 15,
-        mass: 0.1,
       }}
       className="w-20 h-20 m-20 bg-white"
     ></motion.div>

@@ -10,19 +10,19 @@ const EndItem = ({
   ...props
 }: Props & HTMLAttributes<HTMLLIElement>) => {
   return (
-    <>
+    <div>
       <div
         className="h-2 bg-white w-full"
         style={{
-          display: isActiveDragOver ? "block" : "none",
+          visibility: isActiveDragOver ? "visible" : "hidden",
         }}
       ></div>
       <li
-        className="min-h-20 border border-blue-500 cursor-pointer"
+        className="min-h-20  cursor-pointer"
         {...props}
         draggable={false}
       ></li>
-    </>
+    </div>
   );
 };
 

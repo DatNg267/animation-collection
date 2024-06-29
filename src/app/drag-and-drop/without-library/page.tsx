@@ -4,6 +4,7 @@ import EndItem from "../components/EndItem";
 import Item from "../components/Item";
 import List from "../components/List";
 import { TODO_LIST } from "../constant";
+import { motion } from "framer-motion";
 
 export type Task = {
   id: number;
@@ -132,7 +133,7 @@ const Page = () => {
     <div>
       <h1>Drag and Drop without Library</h1>
       <div className="container mt-20">
-        <div className="grid grid-cols-3 gap-10">
+        <div className="grid grid-cols-3 gap-5">
           <List>
             {openList.map((task, index) => (
               <Item

@@ -27,14 +27,18 @@ const data: Item[] = [
 const Table: React.FC = () => {
   const [items, setItems] = useState<Item[]>(data);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
+
+  // This is the state that determines if we are selecting or not
   const [isSelecting, setIsSelecting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [startDraggingPoint, setStartDraggingPoint] = useState({ x: 0, y: 0 });
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isMouseDownSelectedItem, setIsMouseDownSelectedItem] = useState(false);
 
-  const updateMousePosition = (e: MouseEvent) => {
-    setMousePosition({ x: e.clientX, y: e.clientY });
-  };
+  // This is the starting point of the selection
+  const [startPoint, setStartPoint] = useState({ x: 0, y: 0 });
+  const [endPoint, setEndPoint] = useState({ x: 0, y: 0 });
+
+  const tableRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // window.addEventListener("dragover", updateMousePosition);
@@ -42,58 +46,6 @@ const Table: React.FC = () => {
       setIsDragging(false);
     });
     // return () => window.removeEventListener("dragover", updateMousePosition);
-  }, []);
-
-  const [startPoint, setStartPoint] = useState({ x: 0, y: 0 });
-  const [endPoint, setEndPoint] = useState({ x: 0, y: 0 });
-  const tableRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      console.log({
-        x: e.clientX,
-        y: e.clientY,
-      });
-      setStartDraggingPoint({ x: e.clientX, y: e.clientY });
-      if (e.target instanceof HTMLTableCellElement) {
-        const targetId = e.target.id;
-        if (targetId.startsWith("td-item-name-")) {
-          setIsSelecting(false);
-          const itemId = parseInt(targetId.replace("td-item-name-", ""), 10);
-
-          const newSelectedItems = selectedItems.includes(itemId)
-            ? [...selectedItems]
-            : [...selectedItems, itemId];
-
-          setSelectedItems(newSelectedItems);
-
-          return;
-        } else {
-          setIsSelecting(true);
-          setStartPoint({ x: e.clientX, y: e.clientY });
-          setEndPoint({ x: e.clientX, y: e.clientY });
-        }
-      } else {
-        setIsSelecting(true);
-        setStartPoint({ x: e.clientX, y: e.clientY });
-        setEndPoint({ x: e.clientX, y: e.clientY });
-      }
-    },
-    [selectedItems]
-  );
-
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
-      if (isSelecting) {
-        setEndPoint({ x: e.clientX, y: e.clientY });
-      }
-    },
-    [isSelecting]
-  );
-
-  const handleMouseUp = useCallback(() => {
-    setIsSelecting(false);
-    setIsDragging(false);
   }, []);
 
   useEffect(() => {
@@ -123,14 +75,74 @@ const Table: React.FC = () => {
         );
       })
       .map((item) => item.id);
+    console.log({
+      newSelectedItems,
+    });
 
     setSelectedItems(newSelectedItems);
   }, [isSelecting, startPoint, endPoint, items]);
 
+  const getMouseDownSelectedItem = useCallback(
+    (e: React.MouseEvent) => {
+      const clientX = e.clientX;
+      const clientY = e.clientY;
+
+      const element = document.elementFromPoint(clientX, clientY);
+      console.log({ element });
+      if (element instanceof HTMLTableCellElement) {
+        const id = parseInt(element.parentElement!.id.split("-")[1], 10);
+        console.log({ id });
+        if (selectedItems.includes(id)) {
+          setIsMouseDownSelectedItem(true);
+          return true;
+        }
+      }
+
+      return false;
+    },
+    [selectedItems]
+  );
+
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (getMouseDownSelectedItem(e)) {
+        setIsSelecting(false);
+        return;
+      }
+
+      if (e.target instanceof HTMLTableCellElement) {
+        if (e.target.draggable) {
+          setIsSelecting(false);
+        } else {
+          setIsSelecting(true);
+        }
+      } else {
+        setIsSelecting(true);
+      }
+      setStartPoint({ x: e.clientX, y: e.clientY });
+      setEndPoint({ x: e.clientX, y: e.clientY });
+    },
+    [getMouseDownSelectedItem]
+  );
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (isSelecting) {
+        setEndPoint({ x: e.clientX, y: e.clientY });
+      }
+    },
+    [isSelecting]
+  );
+
+  const handleMouseUp = useCallback(() => {
+    setIsSelecting(false);
+    setIsDragging(false);
+    setIsMouseDownSelectedItem(false);
+  }, []);
+
   const handleDragStart = useCallback(
     (e: React.DragEvent, itemId: number) => {
       e.dataTransfer.setData("text/plain", selectedItems.toString());
-      setStartDraggingPoint({ x: e.clientX, y: e.clientY });
       setIsDragging(true);
       if (isSelecting) {
         setIsSelecting(false);
@@ -146,7 +158,9 @@ const Table: React.FC = () => {
 
   const handleDrop = useCallback(
     (e: React.DragEvent, targetId: number) => {
+      console.log("handleDrop");
       e.preventDefault();
+      setIsMouseDownSelectedItem(false);
       setIsDragging(false);
       const draggedId = parseInt(e.dataTransfer.getData("text/plain"), 10);
       const draggedIndex = items.findIndex((item) => item.id === draggedId);
@@ -206,6 +220,12 @@ const Table: React.FC = () => {
 
             return (
               <tr
+                onClick={() => {
+                  console.log("clicked");
+                }}
+                onDoubleClick={() => {
+                  console.log("double clicked");
+                }}
                 key={item.id}
                 onDragOver={handleDragOver}
                 id={`item-${item.id}`}
@@ -213,20 +233,36 @@ const Table: React.FC = () => {
                   backgroundColor: selectedItems.includes(item.id)
                     ? "green"
                     : "transparent",
-                  cursor: "move",
                 }}
               >
-                <td className=" border border-white">{item.id}</td>
+                <td
+                  className=" border border-white"
+                  draggable={
+                    selectedItems.includes(item.id) &&
+                    (!isSelecting || isMouseDownSelectedItem)
+                  }
+                  onDragStart={(e) => handleDragStart(e, item.id)}
+                >
+                  {item.id}
+                </td>
                 <td
                   onDrop={(e) => handleDrop(e, item.id)}
-                  draggable
+                  draggable={selectedItems.includes(item.id)}
                   onDragStart={(e) => handleDragStart(e, item.id)}
-                  id={`td-item-name-${item.id}`}
-                  className=" border border-white"
+                  className=" border border-white w-40"
                 >
                   {item.name}
                 </td>
-                <td className=" border border-white">{item.age}</td>
+                <td
+                  className=" border border-white"
+                  draggable={
+                    selectedItems.includes(item.id) &&
+                    (!isSelecting || isMouseDownSelectedItem)
+                  }
+                  onDragStart={(e) => handleDragStart(e, item.id)}
+                >
+                  {item.age}
+                </td>
                 <AnimatePresence>
                   {isDragging && selectedItems.includes(item.id) && (
                     <motion.td

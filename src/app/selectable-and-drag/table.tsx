@@ -82,22 +82,42 @@ const Table: React.FC = () => {
     setSelectedItems(newSelectedItems);
   }, [isSelecting, startPoint, endPoint, items]);
 
-  const getMouseDownSelectedItem = useCallback(
+  const checkMouseDownOnSelectedItem = useCallback(
     (e: React.MouseEvent) => {
       const clientX = e.clientX;
       const clientY = e.clientY;
 
-      const element = document.elementFromPoint(clientX, clientY);
-      console.log({ element });
-      if (element instanceof HTMLTableCellElement) {
-        const id = parseInt(element.parentElement!.id.split("-")[1], 10);
-        console.log({ id });
-        if (selectedItems.includes(id)) {
-          setIsMouseDownSelectedItem(true);
-          return true;
-        }
-      }
+      const selectionRect = {
+        left: clientX,
+        top: clientY,
+        right: clientX,
+        bottom: clientY,
+      };
 
+      const indexOfItem = selectedItems.findIndex((item) => {
+        const element = document.getElementById(`item-${item}`);
+        if (!element || !tableRef.current) return false;
+
+        const rect = element.getBoundingClientRect();
+        const tableRect = tableRef.current.getBoundingClientRect();
+
+        return (
+          rect.left < selectionRect.right &&
+          rect.right > selectionRect.left &&
+          rect.top < selectionRect.bottom &&
+          rect.bottom > selectionRect.top &&
+          rect.top >= tableRect.top &&
+          rect.bottom <= tableRect.bottom
+        );
+      });
+
+      console.log({ indexOfItem });
+      if (indexOfItem !== -1) {
+        setIsMouseDownSelectedItem(true);
+        return true;
+      } // No item is selected
+
+      setIsMouseDownSelectedItem(false);
       return false;
     },
     [selectedItems]
@@ -105,7 +125,7 @@ const Table: React.FC = () => {
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
-      if (getMouseDownSelectedItem(e)) {
+      if (checkMouseDownOnSelectedItem(e)) {
         setIsSelecting(false);
         return;
       }
@@ -122,7 +142,7 @@ const Table: React.FC = () => {
       setStartPoint({ x: e.clientX, y: e.clientY });
       setEndPoint({ x: e.clientX, y: e.clientY });
     },
-    [getMouseDownSelectedItem]
+    [checkMouseDownOnSelectedItem]
   );
 
   const handleMouseMove = useCallback(

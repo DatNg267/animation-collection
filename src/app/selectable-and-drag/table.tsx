@@ -28,6 +28,9 @@ const Table: React.FC = () => {
   const [items, setItems] = useState<Item[]>(data);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
 
+  // This is the state of sub key
+  const [lastItemSelected, setLastItemSelected] = useState<number>(0);
+
   // This is the state that determines if we are selecting or not
   const [isSelecting, setIsSelecting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -48,39 +51,85 @@ const Table: React.FC = () => {
     // return () => window.removeEventListener("dragover", updateMousePosition);
   }, []);
 
+  const updateSelectedList = useCallback(
+    ({
+      startPoint,
+      endPoint,
+      type,
+    }: {
+      startPoint: { x: number; y: number };
+      endPoint: { x: number; y: number };
+      type: "renew" | "ctrl" | "shift";
+    }) => {
+      const selectionRect = {
+        left: Math.min(startPoint.x, endPoint.x),
+        top: Math.min(startPoint.y, endPoint.y),
+        right: Math.max(startPoint.x, endPoint.x),
+        bottom: Math.max(startPoint.y, endPoint.y),
+      };
+
+      const findItems = items
+        .filter((item) => {
+          const element = document.getElementById(`item-${item.id}`);
+          if (!element || !tableRef.current) return false;
+
+          const rect = element.getBoundingClientRect();
+          const tableRect = tableRef.current.getBoundingClientRect();
+
+          return (
+            rect.left < selectionRect.right &&
+            rect.right > selectionRect.left &&
+            rect.top < selectionRect.bottom &&
+            rect.bottom > selectionRect.top &&
+            rect.top >= tableRect.top &&
+            rect.bottom <= tableRect.bottom
+          );
+        })
+        .map((item) => item.id);
+
+      if (type === "renew") {
+        setSelectedItems(findItems);
+        setLastItemSelected(findItems[findItems.length - 1]);
+      }
+      // In-case of ctrl or shift, only one item is selected
+      else if (type === "ctrl") {
+        const isExist = findItems.every((item) => selectedItems.includes(item));
+        if (isExist) {
+          setSelectedItems((prev) =>
+            prev.filter((item) => !findItems.includes(item))
+          );
+          setLastItemSelected(findItems[findItems.length - 1]);
+        } else {
+          setSelectedItems((prev) => [...prev, ...findItems]);
+          setLastItemSelected(findItems[findItems.length - 1]);
+        }
+      } else if (type === "shift") {
+        const currentIndex = items.findIndex(
+          (item) => item.id === findItems[0]
+        )!;
+        const lastItemSelectedIndex = items.findIndex(
+          (item) => item.id === lastItemSelected
+        )!;
+        console.log({ lastItemSelected });
+        console.log({ currentIndex });
+
+        const start = Math.min(lastItemSelectedIndex, currentIndex);
+        const end = Math.max(lastItemSelectedIndex, currentIndex);
+
+        console.log({ start, end });
+        const newList = items.slice(start, end + 1).map((item) => item.id);
+        setSelectedItems([...newList]);
+        setLastItemSelected(newList[newList.length - 1]);
+      }
+    },
+    [items, lastItemSelected, selectedItems]
+  );
+
   useEffect(() => {
     if (!isSelecting) return;
-    const selectionRect = {
-      left: Math.min(startPoint.x, endPoint.x),
-      top: Math.min(startPoint.y, endPoint.y),
-      right: Math.max(startPoint.x, endPoint.x),
-      bottom: Math.max(startPoint.y, endPoint.y),
-    };
 
-    const newSelectedItems = items
-      .filter((item) => {
-        const element = document.getElementById(`item-${item.id}`);
-        if (!element || !tableRef.current) return false;
-
-        const rect = element.getBoundingClientRect();
-        const tableRect = tableRef.current.getBoundingClientRect();
-
-        return (
-          rect.left < selectionRect.right &&
-          rect.right > selectionRect.left &&
-          rect.top < selectionRect.bottom &&
-          rect.bottom > selectionRect.top &&
-          rect.top >= tableRect.top &&
-          rect.bottom <= tableRect.bottom
-        );
-      })
-      .map((item) => item.id);
-    console.log({
-      newSelectedItems,
-    });
-
-    setSelectedItems(newSelectedItems);
-  }, [isSelecting, startPoint, endPoint, items]);
+    updateSelectedList({ startPoint, endPoint, type: "renew" });
+  }, [isSelecting, startPoint, endPoint, items, updateSelectedList]);
 
   const checkMouseDownOnSelectedItem = useCallback(
     (e: React.MouseEvent) => {
@@ -125,6 +174,24 @@ const Table: React.FC = () => {
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
+      if (e.ctrlKey) {
+        updateSelectedList({
+          startPoint: { x: e.clientX, y: e.clientY },
+          endPoint: { x: e.clientX, y: e.clientY },
+          type: "ctrl",
+        });
+        return;
+      }
+
+      if (e.shiftKey) {
+        updateSelectedList({
+          startPoint: { x: e.clientX, y: e.clientY },
+          endPoint: { x: e.clientX, y: e.clientY },
+          type: "shift",
+        });
+        return;
+      }
+
       if (checkMouseDownOnSelectedItem(e)) {
         setIsSelecting(false);
         return;
@@ -142,7 +209,7 @@ const Table: React.FC = () => {
       setStartPoint({ x: e.clientX, y: e.clientY });
       setEndPoint({ x: e.clientX, y: e.clientY });
     },
-    [checkMouseDownOnSelectedItem]
+    [checkMouseDownOnSelectedItem, updateSelectedList]
   );
 
   const handleMouseMove = useCallback(

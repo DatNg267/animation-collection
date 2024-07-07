@@ -129,7 +129,7 @@ const Table: React.FC = () => {
     if (!isSelecting) return;
 
     updateSelectedList({ startPoint, endPoint, type: "renew" });
-  }, [isSelecting, startPoint, endPoint, items, updateSelectedList]);
+  }, [isSelecting, startPoint, endPoint, items]);
 
   const checkMouseDownOnSelectedItem = useCallback(
     (e: React.MouseEvent) => {
@@ -194,6 +194,7 @@ const Table: React.FC = () => {
 
       if (checkMouseDownOnSelectedItem(e)) {
         setIsSelecting(false);
+
         return;
       }
 

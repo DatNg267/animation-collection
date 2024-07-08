@@ -9,17 +9,22 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@welldone-software/why-did-you-render": "^8.0.3",
     "framer-motion": "10.18.0",
     "gsap": "^3.12.5",
+    "lodash": "^4.17.21",
     "next": "14.2.3",
     "react": "^18",
     "react-dom": "^18",
-    "use-debounce": "^10.0.1"
+    "react-table": "^7.8.0",
+    "use-debounce": "^10.0.1",
+    "use-debounced": "^1.1.0"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/react-table": "^7.7.20",
     "eslint": "^8",
     "eslint-config-next": "14.2.3",
     "postcss": "^8",

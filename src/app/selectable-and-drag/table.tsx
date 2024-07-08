@@ -222,11 +222,23 @@ const Table: React.FC = () => {
     [isSelecting]
   );
 
-  const handleMouseUp = useCallback(() => {
-    setIsSelecting(false);
-    setIsDragging(false);
-    setIsMouseDownSelectedItem(false);
-  }, []);
+  const handleMouseUp = useCallback(
+    (e) => {
+      console.log("handleMouseUp");
+      if (isSelecting) {
+        setIsSelecting(false);
+        setIsDragging(false);
+        setIsMouseDownSelectedItem(false);
+      } else {
+        updateSelectedList({
+          startPoint: { x: e.clientX, y: e.clientY },
+          endPoint: { x: e.clientX, y: e.clientY },
+          type: "renew",
+        });
+      }
+    },
+    [isSelecting, updateSelectedList]
+  );
 
   const handleDragStart = useCallback(
     (e: React.DragEvent, itemId: number) => {

@@ -17,12 +17,42 @@ const DropdownCustom = (props: Props) => {
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   const contentRef = React.useRef<HTMLDivElement>(null);
   const listItemRef = React.useRef<Map<number, HTMLElement>>(new Map());
+  const [position, setPosition] = React.useState<{
+    top: number;
+    left: number;
+    width: number;
+    scale: number;
+  }>({
+    top: 0,
+    left: 0,
+    width: 0,
+    scale: 1,
+  });
 
   const cacheViewport = useRef<string>();
   const scrollbarWidth = useRef(0);
   const handleOnChange = (value: boolean) => {
     console.log(value);
     setIsOpen(value);
+  };
+
+  const handleCalculatePosition = () => {
+    if (triggerRef.current) {
+      const triggerRect = triggerRef.current.getBoundingClientRect();
+
+      const scale = window.innerWidth / window.outerWidth;
+      console.log({
+        windInnerWith: window.innerWidth,
+        docElemClientWidth: document.documentElement.clientWidth,
+      });
+      console.log({ scale });
+      console.log({ triggerRect });
+      const top = triggerRect.bottom;
+      const left = triggerRect.left;
+      const width = triggerRect?.width || 0;
+
+      setPosition({ top, left, width, scale });
+    }
   };
 
   const handleResetBodyStyle = () => {
@@ -77,6 +107,11 @@ const DropdownCustom = (props: Props) => {
     handleCalculatePosition();
   };
 
+  const handleWindowResize = (e: Event) => {
+    console.log({ e });
+    handleCalculatePosition();
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       event.stopPropagation();
@@ -120,35 +155,15 @@ const DropdownCustom = (props: Props) => {
       }
     };
     if (isOpen) {
+      window.addEventListener("resize", handleWindowResize);
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
+      window.removeEventListener("resize", handleWindowResize);
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
-
-  const positionRef = React.useRef<{
-    top: number;
-    left: number;
-    width: number;
-  }>({
-    top: 0,
-    left: 0,
-    width: 0,
-  });
-
-  const handleCalculatePosition = () => {
-    if (triggerRef.current) {
-      const triggerRect = triggerRef.current.getBoundingClientRect();
-
-      const top = triggerRect.bottom;
-      const left = triggerRect.left;
-      const width = triggerRect?.width || 0;
-
-      positionRef.current = { top, left, width };
-    }
-  };
 
   return (
     <DropdownContext.Provider
@@ -178,20 +193,21 @@ const DropdownCustom = (props: Props) => {
               className="fixed top-0  pointer-events-auto left-0 bg-white z-50 rounded-sm text-black"
               initial={{
                 opacity: 0,
-                y: positionRef.current.top,
-                x: positionRef.current.left,
+                y: position.top,
+                x: position.left,
                 scale: 0.8,
               }}
               animate={{
                 opacity: 1,
-                y: positionRef.current.top,
-                x: positionRef.current.left,
+                y: position.top,
+                x: position.left,
                 scale: 1,
               }}
+              transition={{}}
               exit={{ opacity: 0 }}
               style={{
-                transform: `translate(${positionRef.current.left}px, ${positionRef.current.top}px)`,
-                width: `${positionRef.current.width}px`,
+                transform: `translate(${position.left}px, ${position.top}px) scale(${position.scale})`,
+                width: `${position.width}px`,
               }}
             >
               <div className="flex flex-col p-2">

@@ -1,4 +1,4 @@
-import React, { RefObject, useEffect } from "react";
+import React, { RefObject, useEffect, useRef } from "react";
 import DropdownContent from "./DropdownContent";
 import { createPortal } from "react-dom";
 import { AnimatePresence } from "framer-motion";
@@ -17,16 +17,69 @@ const DropdownCustom = (props: Props) => {
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   const contentRef = React.useRef<HTMLDivElement>(null);
   const listItemRef = React.useRef<Map<number, HTMLElement>>(new Map());
+
+  const cacheViewport = useRef<string>();
+  const scrollbarWidth = useRef(0);
   const handleOnChange = (value: boolean) => {
     console.log(value);
     setIsOpen(value);
   };
 
+  const handleResetBodyStyle = () => {
+    document.body.style.pointerEvents = "auto";
+    document.body.style.overflow = "auto";
+    document.body.style.marginRight = "0px";
+
+    const viewportMeta = document.querySelector('meta[name="viewport"]');
+    if (viewportMeta) {
+      if (cacheViewport.current) {
+        viewportMeta.setAttribute("content", cacheViewport.current);
+      } else {
+        viewportMeta.setAttribute(
+          "content",
+          "width=device-width, initial-scale=1"
+        );
+      }
+    }
+  };
+
+  const handleOpenDropdown = () => {
+    scrollbarWidth.current =
+      window.innerWidth - document.documentElement.clientWidth;
+    // Select the meta tag with the name attribute 'viewport'
+    const viewportMeta = document.querySelector(
+      'meta[name="viewport"]'
+    ) as HTMLMetaElement;
+    if (viewportMeta) {
+      console.log({
+        viewportMeta,
+      });
+      cacheViewport.current = viewportMeta.content ?? "";
+      console.log({
+        viewportMetaContent: viewportMeta.content,
+      });
+      viewportMeta.setAttribute(
+        "content",
+        "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+      );
+    } else {
+      const newViewportMeta = document.createElement("meta");
+      newViewportMeta.name = "viewport";
+      newViewportMeta.content =
+        "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no";
+      document.head.appendChild(newViewportMeta);
+    }
+
+    document.body.style.marginRight = `${scrollbarWidth.current}px`;
+    document.body.style.pointerEvents = "none";
+    document.body.style.overflow = "hidden";
+
+    handleCalculatePosition();
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       event.stopPropagation();
-      console.log({ event: event.target });
-      console.log({ contentRef: contentRef.current });
       if (contentRef && contentRef.current) {
         const mousePos = {
           x: event.clientX,
@@ -42,6 +95,7 @@ const DropdownCustom = (props: Props) => {
           mousePos.y > contentRect.bottom
         ) {
           setIsOpen(false);
+          handleResetBodyStyle();
         } else {
           console.log({ mousePos });
           listItemRef.current.forEach((ref, key) => {
@@ -57,6 +111,7 @@ const DropdownCustom = (props: Props) => {
             ) {
             } else {
               ref.click();
+              handleResetBodyStyle();
               setIsOpen(false);
             }
           });
@@ -66,12 +121,8 @@ const DropdownCustom = (props: Props) => {
     };
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-      document.body.style.pointerEvents = "none";
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.pointerEvents = "auto";
-      document.body.style.overflow = "auto";
     }
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -94,11 +145,7 @@ const DropdownCustom = (props: Props) => {
       const top = triggerRect.bottom;
       const left = triggerRect.left;
       const width = triggerRect?.width || 0;
-      console.log({
-        top,
-        left,
-        width,
-      });
+
       positionRef.current = { top, left, width };
     }
   };
@@ -115,8 +162,9 @@ const DropdownCustom = (props: Props) => {
           ref={triggerRef}
           onClick={() => {
             if (!isOpen) {
-              handleCalculatePosition();
+              handleOpenDropdown();
             }
+
             setIsOpen(!isOpen);
           }}
           className="bg-red-500 text-white cursor-pointer p-10"

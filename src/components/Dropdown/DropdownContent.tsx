@@ -1,6 +1,12 @@
 /* eslint-disable react/display-name */
 import { motion } from "framer-motion";
-import { forwardRef, HTMLAttributes, RefObject } from "react";
+import {
+  AnimationEvent,
+  forwardRef,
+  HTMLAttributes,
+  LegacyRef,
+  RefObject,
+} from "react";
 
 type Props = HTMLAttributes<HTMLDivElement> & {};
 

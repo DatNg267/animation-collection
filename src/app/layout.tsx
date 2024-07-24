@@ -11,7 +11,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={"bg-black text-white h-dvh w-dvw"}>
+      <body className={"bg-black text-white h-full overflow-hidden"}>
         <>{children}</>
       </body>
     </html>

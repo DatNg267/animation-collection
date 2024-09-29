@@ -1,14 +1,15 @@
 "use client";
 import {
   motion,
-  PanInfo,
   useAnimation,
   useMotionValue,
   useTransform,
 } from "framer-motion";
-import { MouseEvent, useRef } from "react";
+import React, { useState } from "react";
 
 const DraggableItem = ({ content }: { content: string }) => {
+  const [isDragging, setIsDragging] = useState(false);
+
   // Sử dụng useMotionValue để theo dõi vị trí chuột
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -17,26 +18,27 @@ const DraggableItem = ({ content }: { content: string }) => {
   const controls = useAnimation();
 
   // Transform để tạo hiệu ứng "bám theo" chuột
-  const x = useTransform(mouseX, (latest) => latest * 0.1);
-  const y = useTransform(mouseY, (latest) => latest * 0.1);
+  const top = useTransform(mouseY, (latest) => `${latest}px`);
+  const left = useTransform(mouseX, (latest) => `${latest}px`);
 
   const handleDragStart = (event: React.DragEvent<HTMLDivElement>) => {
+    setIsDragging(true);
     var img = new Image();
     img.src = ""; // Đặt src thành một hình ảnh trống
     event.dataTransfer.setDragImage(img, 0, 0);
     controls.start({ width: 200, height: 50 });
   };
 
-  const handleDrag = (event: any) => {
+  const handleDrag = (event: React.DragEvent<HTMLDivElement>) => {
     mouseX.set(event.clientX);
     mouseY.set(event.clientY);
   };
 
   const handleDragEnd = () => {
-    console.log("drag end");
+    setIsDragging(false);
     controls.start({
-      x: 0,
-      y: 0,
+      top: 0,
+      left: 0,
       scale: 1,
       transition: { type: "spring", stiffness: 300, damping: 20 },
       width: 100,
@@ -69,18 +71,19 @@ const DraggableItem = ({ content }: { content: string }) => {
         {content}
       </div>
 
-      <motion.div
-        className="absolute h-10 w-10 bg-red-400"
-        animate={controls}
-        style={{ x: mouseX, y: mouseY }}
-      ></motion.div>
+      {isDragging && (
+        <motion.div
+          className="h-10 w-10 fixed bg-red-400"
+          animate={controls}
+          style={{ top, left }}
+        ></motion.div>
+      )}
     </div>
   );
 };
 
-type Props = {};
-const page = (props: Props) => {
+const Page = () => {
   return <DraggableItem content="Drag me!" />;
 };
 
-export default page;
+export default Page;

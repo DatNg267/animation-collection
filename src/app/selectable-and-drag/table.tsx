@@ -223,7 +223,7 @@ const Table: React.FC = () => {
   );
 
   const handleMouseUp = useCallback(
-    (e) => {
+    (e: { clientX: any; clientY: any }) => {
       console.log("handleMouseUp");
       if (isSelecting) {
         setIsSelecting(false);

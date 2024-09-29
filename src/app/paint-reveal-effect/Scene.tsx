@@ -15,8 +15,6 @@ const Scene = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [windowSize]);
 
-  const lerp = (x: number, y: number, a: number) => x * (1 - a) + y * a;
-
   const init = () => {
     const ctx = canvasRef.current?.getContext("2d");
     if (!ctx) return;
@@ -25,6 +23,8 @@ const Scene = () => {
     ctx.fillRect(0, 0, windowSize.width, windowSize.height);
     ctx.globalCompositeOperation = "destination-out";
   };
+
+  const lerp = (x: number, y: number, a: number) => x * (1 - a) + y * a;
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const { clientX, clientY, movementX, movementY } = e;

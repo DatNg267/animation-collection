@@ -1,19 +1,41 @@
-import { useState, useEffect } from "react";
+// import React from "react";
 
-const useMousePosition = () => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+// const useMousePosition = ({ includeTouch }: { includeTouch: boolean }) => {
+//   const [mousePosition, setMousePosition] = React.useState({
+//     x: null,
+//     y: null,
+//   });
 
-  const updateMousePosition = (e: MouseEvent) => {
-    setMousePosition({ x: e.clientX, y: e.clientY });
-  };
+//   React.useEffect(() => {
+//     const updateMousePosition = (ev: MouseEvent | TouchEvent) => {
+//       let x, y;
 
-  useEffect(() => {
-    window.addEventListener("mousemove", updateMousePosition);
+//       if ("touches" in ev) {
+//         const touch = ev.touches[0];
+//         [x, y] = [touch.clientX, touch.clientY];
+//       } else {
+//         [x, y] = [ev.clientX, ev.clientY];
+//       }
 
-    return () => window.removeEventListener("mousemove", updateMousePosition);
-  }, []);
+//       setMousePosition({ x, y });
+//     };
 
-  return mousePosition;
-};
+//     window.addEventListener("mousemove", updateMousePosition);
 
-export default useMousePosition;
+//     if (includeTouch) {
+//       window.addEventListener("touchmove", updateMousePosition);
+//     }
+
+//     return () => {
+//       window.removeEventListener("mousemove", updateMousePosition);
+
+//       if (includeTouch) {
+//         window.removeEventListener("touchmove", updateMousePosition);
+//       }
+//     };
+//   }, [includeTouch]);
+
+//   return mousePosition;
+// };
+
+// export default useMousePosition;

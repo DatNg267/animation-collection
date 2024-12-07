@@ -1,11 +1,11 @@
 "use client";
 import React, { useState } from "react";
 import styles from "./styles.module.scss";
-import useMousePosition from "./useMousePosition";
+import { useMouse } from "@uidotdev/usehooks";
 import { motion } from "framer-motion";
 
 const MaskCursor = () => {
-  const { x, y } = useMousePosition();
+  const [mouse] = useMouse();
   const [isHovered, setIsHovered] = useState(false);
 
   const size = isHovered ? 400 : 40;
@@ -15,10 +15,10 @@ const MaskCursor = () => {
       <motion.div
         className={styles.mask}
         animate={{
-          WebkitMaskPosition: `${x - size / 2}px ${y - size / 2}px`,
+          WebkitMaskPosition: `${mouse.x - size / 2}px ${mouse.y - size / 2}px`,
           WebkitMaskSize: `${size}px`,
         }}
-        transition={{ type: "tween", ease: "backOut", duration: 0.5 }}
+        transition={{ type: "tween", ease: "backOut" }}
       >
         <p
           onMouseEnter={() => {

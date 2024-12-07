@@ -1,9 +1,16 @@
-export const PATHS = {
-  HOME: "/",
-  FRAMER_MOTION: "/framer-motion",
-  SELECTABLE_AND_DRAG: "/selectable-and-drag",
-  DRAG_AND_DROP: "/drag-and-drop",
-  DND_KIT_USAGE: "/dnd-kit-usage",
-  GSAP: "/gsap",
-  PAINT_REVEAL_EFFECT: "/paint-reveal-effect",
+export const Paths = {
+  Home: "/",
+  SelectableAndDrag: "/selectable-and-drag",
+  DragAndDrop: "/drag-and-drop",
+  DndKitUsage: "/dnd-kit-usage",
+  FramerMotion: {
+    MaskCursor: "/framer-motion/mask-cursor",
+    SelectCursor: "/framer-motion/select-cursor",
+    DropAndDrag: "/framer-motion/drop-and-drag",
+    MagneticEffect: "/framer-motion/magnetic-effect",
+    UseAnimation: "/framer-motion/use-animation",
+  },
+  Gsap: {
+    PaintRevealEffect: "/gsap/paint-reveal-effect",
+  },
 };

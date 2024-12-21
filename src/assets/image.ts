@@ -1,0 +1,17 @@
+export const images = {
+  image1: "/images/1080.webp",
+  image2: "/images/1080(1).webp",
+  image3: "/images/1080(2).webp",
+  image4: "/images/1080(3).webp",
+  image5: "/images/1080(4).webp",
+  image6: "/images/1080(5).webp",
+  image7: "/images/1080(6).webp",
+  image8: "/images/1080(7).webp",
+  image9: "/images/1080(8).webp",
+  image10: "/images/1080(9).webp",
+  image11: "/images/1080(10).webp",
+  image12: "/images/1080(11).webp",
+  image13: "/images/1080(12).webp",
+  image14: "/images/1080(13).webp",
+  image15: "/images/1080(14).webp",
+};

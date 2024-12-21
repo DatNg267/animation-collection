@@ -20,6 +20,7 @@ const nextConfig = {
         hostname: "**",
       },
     ],
+    formats: ["image/avif", "image/webp"],
   },
 };
 

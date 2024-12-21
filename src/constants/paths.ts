@@ -16,6 +16,7 @@ export const Paths = {
     MagneticEffect: "/framer-motion/magnetic-effect",
     UseAnimation: "/framer-motion/use-animation",
     ParallaxSectionTransition: "/framer-motion/parallax-section-transition",
+    SmoothParallaxScroll: "/framer-motion/smooth-parallax-scroll",
   },
   Gsap: {
     PaintRevealEffect: "/gsap/paint-reveal-effect",

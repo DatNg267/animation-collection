@@ -4,6 +4,7 @@ export const Paths = {
   DragAndDrop: "/drag-and-drop",
   DndKitUsage: "/dnd-kit-usage",
   FramerMotion: {
+    Scroll: "/framer-motion/scroll",
     Layout: "/framer-motion/layout",
     MaskCursor: "/framer-motion/mask-cursor",
     SelectCursor: "/framer-motion/select-cursor",

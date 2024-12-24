@@ -3,9 +3,20 @@ export const Paths = {
   Core: {
     SmoothScroll: "/core/smooth-scroll",
   },
-  SelectableAndDrag: "/selectable-and-drag",
-  DragAndDrop: "/drag-and-drop",
-  DndKitUsage: "/dnd-kit-usage",
+  Common: {
+    Table: "/common/table",
+    DragAndDrop: {
+      DndKitUsage: "/common/dnd-kit-usage",
+      WithoutLibrary: "/common/drag-and-drop/without-library",
+      WithDnd: "/common/drag-and-drop/with-dnd",
+    },
+    DndKitUsage: "/common/dnd-kit-usage",
+  },
+  Demo: {
+    SelectableAndDrag: "/selectable-and-drag",
+    PaintRevealEffect: "/paint-reveal-effect",
+  },
+
   FramerMotion: {
     Scroll: "/framer-motion/scroll",
     BouncingMotion: "/framer-motion/bouncing-motion",

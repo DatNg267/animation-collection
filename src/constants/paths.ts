@@ -5,12 +5,9 @@ export const Paths = {
   },
   Common: {
     Table: "/common/table",
-    DragAndDrop: {
-      DndKitUsage: "/common/dnd-kit-usage",
-      WithoutLibrary: "/common/drag-and-drop/without-library",
-      WithDnd: "/common/drag-and-drop/with-dnd",
-    },
     DndKitUsage: "/common/dnd-kit-usage",
+    WithoutLibrary: "/common/drag-and-drop/without-library",
+    WithDnd: "/common/drag-and-drop/with-dnd",
   },
   Demo: {
     SelectableAndDrag: "/selectable-and-drag",
@@ -31,5 +28,11 @@ export const Paths = {
   },
   Gsap: {
     PaintRevealEffect: "/gsap/paint-reveal-effect",
+  },
+
+  // Group topic
+  Text: {
+    Scramble: "/text/Scramble",
+    Wave: "/text/Wave",
   },
 };

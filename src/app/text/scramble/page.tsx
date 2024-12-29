@@ -1,117 +1,147 @@
 "use client";
-import { motion } from "framer-motion";
-import React, { useEffect } from "react";
-import { set } from "react-hook-form";
+import "./styles.css";
+import React, { useEffect, useRef, useState } from "react";
+interface QueueItem {
+  from: string;
+  to: string;
+  start: number;
+  end: number;
+  char?: string;
+}
 
-type Props = {};
-const chars =
-  "!<>-_\\/[]{}—=+*^?#________abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+interface ScrambleState {
+  queue: QueueItem[];
+  frame: number;
+}
+class TextScrambleLogic {
+  private readonly chars: string;
 
-const defaultString = [
-  "Welcome to Framer Motion Page",
-  "Text Scramble Effect",
-  "React",
-];
-const randomString = (targetLength: number) => {
-  // random string min length 20 , max length 40
-  const str = Array.from({ length: targetLength })
-    .map(() => chars[Math.floor(Math.random() * chars.length)])
-    .join("");
+  constructor() {
+    this.chars = "!<>-_\\/[]{}—=+*^?#________";
+  }
 
-  return str;
-};
-const ANIMATION_FRAME = 20;
-const TextScramble = () => {
-  const [text, setText] = React.useState("");
-  const nextTextRef = React.useRef(defaultString[1]);
-  const currentTextRef = React.useRef(defaultString[0]);
-  const [startRandom, setStartRandom] = React.useState(true);
-  useEffect(() => {
-    let interval: any;
-    let timeout: any;
-    if (!startRandom) {
-      return;
+  setText(
+    element: HTMLElement | null,
+    newText: string,
+    oldText: string
+  ): ScrambleState {
+    const length: number = Math.max(oldText.length, newText.length);
+    const queue: QueueItem[] = [];
+
+    for (let i = 0; i < length; i++) {
+      const from: string = oldText[i] || "";
+      const to: string = newText[i] || "";
+      const start = Math.floor(Math.random() * 30);
+      const duration = 20 + Math.floor(Math.random() * 20);
+      const end = start + duration;
+      queue.push({ from, to, start, end });
     }
 
-    timeout = setTimeout(() => {
-      clearInterval(interval);
-      setText(nextTextRef.current);
-      currentTextRef.current = nextTextRef.current;
-      nextTextRef.current =
-        defaultString[
-          (defaultString.indexOf(nextTextRef.current) + 1) %
-            defaultString.length
-        ];
-      setStartRandom(false);
-    }, 400);
+    return { queue, frame: 0 };
+  }
 
-    const spaceLength =
-      currentTextRef.current.length - nextTextRef.current.length;
+  randomChar(): string {
+    return this.chars[Math.floor(Math.random() * this.chars.length)];
+  }
+}
 
-    const perTextOneAnimationFrame = 1 * (spaceLength > 0 ? -1 : 1);
-    console.log(
-      `######################################
-      ${currentTextRef.current.length} - ${nextTextRef.current.length} = ${spaceLength}`
-    );
-    interval = setInterval(() => {
-      setText((prev) => {
-        console.log({
-          prev,
-          isEnd:
-            prev.length + perTextOneAnimationFrame - nextTextRef.current.length,
-        });
-        let resLength = 0;
-        if (prev.length === nextTextRef.current.length) {
-          resLength = nextTextRef.current.length;
-        } else if (prev.length === currentTextRef.current.length) {
-          resLength = currentTextRef.current.length + perTextOneAnimationFrame;
-        } else {
-          if (
-            prev.length +
-              perTextOneAnimationFrame -
-              nextTextRef.current.length ===
-            0
-          ) {
-            console.log({
-              res:
-                prev.length +
-                perTextOneAnimationFrame -
-                nextTextRef.current.length,
-            });
-            resLength = nextTextRef.current.length;
-          } else {
-            resLength = prev.length + perTextOneAnimationFrame;
-          }
+interface TextScrambleProps {
+  phrases?: string[];
+  className?: string;
+}
+
+const TextScramble: React.FC<TextScrambleProps> = ({
+  phrases = [
+    "Neo,",
+    "sooner or later",
+    "you're going to realize",
+    "just as I did",
+    "that there's a difference",
+    "between knowing the path",
+    "and walking the path",
+  ],
+  className = "text font-mono",
+}) => {
+  const [output, setOutput] = useState<string>("");
+  const frameRequest = useRef<number>();
+  const textScramble = useRef<TextScrambleLogic>(new TextScrambleLogic());
+  const queueRef = useRef<QueueItem[]>([]);
+  const frameRef = useRef<number>(0);
+  const counterRef = useRef<number>(0);
+  const previousTextRef = useRef<string>("");
+
+  const update = (): void => {
+    let currentOutput: string = "";
+    let complete: number = 0;
+
+    for (let i = 0; i < queueRef.current.length; i++) {
+      let { from, to, start, end, char } = queueRef.current[i];
+
+      if (frameRef.current >= end) {
+        complete++;
+        currentOutput += to;
+      } else if (frameRef.current >= start) {
+        if (!char || Math.random() < 0.28) {
+          char = textScramble.current.randomChar();
+          queueRef.current[i].char = char;
         }
-        // console.log({ resLength });
-        return randomString(resLength);
+        currentOutput += `<span class="dud">${char}</span>`;
+      } else {
+        currentOutput += from;
+      }
+    }
+
+    setOutput(currentOutput);
+    previousTextRef.current = currentOutput;
+    frameRef.current++;
+
+    if (complete === queueRef.current.length) {
+      console.log({
+        currentOutput,
+        complete,
+        queue: queueRef.current,
+        frame: frameRef.current,
       });
-    }, ANIMATION_FRAME);
 
+      setTimeout(next, 800);
+    } else {
+      frameRequest.current = requestAnimationFrame(update);
+    }
+  };
+
+  const next = (): void => {
+    const oldText: string = previousTextRef.current.replace(/<[^>]*>/g, "");
+    const nextPhrase: string = phrases[counterRef.current];
+    const { queue, frame } = textScramble.current.setText(
+      null,
+      nextPhrase,
+      oldText
+    );
+    queueRef.current = queue;
+    frameRef.current = frame;
+
+    if (frameRequest.current) {
+      cancelAnimationFrame(frameRequest.current);
+    }
+    frameRequest.current = requestAnimationFrame(update);
+
+    counterRef.current = (counterRef.current + 1) % phrases.length;
+  };
+
+  useEffect(() => {
+    next();
     return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
-  }, [startRandom]);
-
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setStartRandom(true);
-    }, 2000);
-
-    return () => {
-      clearInterval(interval);
+      if (frameRequest.current) {
+        cancelAnimationFrame(frameRequest.current);
+      }
     };
   }, []);
 
-  return <motion.div>{text}</motion.div>;
-};
-const Page = (props: Props) => {
   return (
-    <div className="flex w-full h-full items-center justify-center">
-      <TextScramble />
+    <div className="min-h-screen flex items-center justify-center ">
+      <div className={className} dangerouslySetInnerHTML={{ __html: output }} />
     </div>
   );
 };
 
-export default Page;
+export default TextScramble;
